@@ -22,10 +22,6 @@ namespace ReportSystemData.Parameter.Report
         [Required]
         public string Image { get; set; }
         [Required]
-        public string CategoryId { get; set; }
-        [Required]
-        public string UserId { get; set; }
-        [Required]
         public bool? IsAnonymous { get; set; }
 
     }

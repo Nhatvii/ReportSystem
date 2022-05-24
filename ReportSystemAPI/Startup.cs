@@ -41,8 +41,14 @@ namespace ReportSystemAPI
                 .AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
-            services.AddDbContext<_24HReportSystemContext>(opt => opt.UseSqlServer
-            (Configuration.GetConnectionString("ReportSystemConnection")));
+            //services.AddDbContext<_24HReportSystemContext>(opt => opt.UseSqlServer
+            //(Configuration.GetConnectionString("ReportSystemConnection")));
+            //services.AddScoped<_24HReportSystemContext>();
+            services.AddDbContext<_24HReportSystemContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("ReportSystemConnection"));
+                options.EnableSensitiveDataLogging(true);
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "24H Report System API", Version = "v1" });

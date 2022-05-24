@@ -42,7 +42,7 @@ namespace ReportSystemData.Repository.Base
 
         public void Create(T entity)
         {
-            throw new NotImplementedException();
+             _dbSet.Add(entity);
         }
 
         public async Task CreateAsyn(T entity)

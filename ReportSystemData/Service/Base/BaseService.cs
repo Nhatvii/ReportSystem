@@ -98,7 +98,7 @@ namespace ReportSystemData.Service.Base
 
         public async Task SaveAsyn()
         {
-            await _dbContext.SaveChangesAsync();
+           await _dbContext.SaveChangesAsync();
         }
         public IQueryable<T> Get(Expression<Func<T, bool>> predicate)
         {

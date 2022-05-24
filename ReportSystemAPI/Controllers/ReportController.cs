@@ -28,15 +28,15 @@ namespace ReportSystemAPI.Controllers
         }
         [HttpPost]
         [Produces("application/json")]
-        public ActionResult CreateReport(CreateReportViewModel report)
+        public async Task<IActionResult> CreateReport(CreateReportViewModel report)
         {
-            return Ok(_repository.CreateReport(report));
+            return Ok(await _repository.CreateReportAsync(report));
         }
-        [HttpGet("{id}")]
-        [Produces("application/json")]
-        public ActionResult<Report> GetReportByID(int id)
-        {
-            return Ok(_repository.GetAllReport());
-        }
+        //[HttpGet("{id}")]
+        //[Produces("application/json")]
+        //public ActionResult<Report> GetReportByID(int id)
+        //{
+        //    return Ok(_repository.GetAllReport());
+        //}
     }
 }
