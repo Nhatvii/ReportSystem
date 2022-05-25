@@ -13,6 +13,7 @@ namespace ReportSystemData.Models
         public _24HReportSystemContext()
         {
         }
+
         public _24HReportSystemContext(DbContextOptions<_24HReportSystemContext> options)
             : base(options)
         {
@@ -22,14 +23,20 @@ namespace ReportSystemData.Models
         public virtual DbSet<AccountInfo> AccountInfo { get; set; }
         public virtual DbSet<Category> Category { get; set; }
         public virtual DbSet<Comment> Comment { get; set; }
+        public virtual DbSet<Emotion> Emotion { get; set; }
         public virtual DbSet<Post> Post { get; set; }
         public virtual DbSet<Report> Report { get; set; }
         public virtual DbSet<Role> Role { get; set; }
         public virtual DbSet<Task> Task { get; set; }
+        public virtual DbSet<TaskDetail> TaskDetail { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+                optionsBuilder.UseSqlServer("Server=localhost;Database=24HReportSystem;Trusted_Connection=True;");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -91,8 +98,7 @@ namespace ReportSystemData.Models
             {
                 entity.Property(e => e.CategoryId)
                     .HasColumnName("Category_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Type)
                     .IsRequired()
@@ -114,6 +120,12 @@ namespace ReportSystemData.Models
                     .HasColumnName("Create_TIme")
                     .HasColumnType("datetime");
 
+                entity.Property(e => e.PostId)
+                    .IsRequired()
+                    .HasColumnName("Post_ID")
+                    .HasMaxLength(50)
+                    .IsFixedLength();
+
                 entity.Property(e => e.Status)
                     .IsRequired()
                     .HasMaxLength(20)
@@ -124,6 +136,47 @@ namespace ReportSystemData.Models
                     .HasColumnName("User_ID")
                     .HasMaxLength(50)
                     .IsFixedLength();
+
+                entity.HasOne(d => d.Post)
+                    .WithMany(p => p.Comment)
+                    .HasForeignKey(d => d.PostId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Comment_Post");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Comment)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Comment_Account");
+            });
+
+            modelBuilder.Entity<Emotion>(entity =>
+            {
+                entity.HasKey(e => new { e.PostId, e.UserId });
+
+                entity.Property(e => e.PostId)
+                    .HasColumnName("Post_ID")
+                    .HasMaxLength(50)
+                    .IsFixedLength();
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("User_ID")
+                    .HasMaxLength(50)
+                    .IsFixedLength();
+
+                entity.Property(e => e.EmotionStatus).HasColumnName("Emotion_Status");
+
+                entity.HasOne(d => d.Post)
+                    .WithMany(p => p.Emotion)
+                    .HasForeignKey(d => d.PostId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Emotion_Post");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Emotion)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Emotion_Account");
             });
 
             modelBuilder.Entity<Post>(entity =>
@@ -136,8 +189,7 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.CategoryId)
                     .IsRequired()
                     .HasColumnName("Category_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.CreateTime)
                     .HasColumnName("Create_Time")
@@ -146,13 +198,14 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.Description).IsRequired();
 
                 entity.Property(e => e.EditorId)
+                    .IsRequired()
                     .HasColumnName("Editor_ID")
                     .HasMaxLength(50)
                     .IsFixedLength();
 
                 entity.Property(e => e.Image)
                     .IsRequired()
-                    .HasMaxLength(200);
+                    .IsUnicode(false);
 
                 entity.Property(e => e.PublicTime)
                     .HasColumnName("Public_Time")
@@ -165,7 +218,7 @@ namespace ReportSystemData.Models
 
                 entity.Property(e => e.Title)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasMaxLength(200);
 
                 entity.Property(e => e.UpdateTime)
                     .HasColumnName("Update_Time")
@@ -186,6 +239,7 @@ namespace ReportSystemData.Models
                 entity.HasOne(d => d.Editor)
                     .WithMany(p => p.Post)
                     .HasForeignKey(d => d.EditorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Post_Account");
             });
 
@@ -199,8 +253,7 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.CategoryId)
                     .IsRequired()
                     .HasColumnName("Category_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.CreateTime)
                     .HasColumnName("Create_Time")
@@ -215,7 +268,7 @@ namespace ReportSystemData.Models
                     .HasMaxLength(50)
                     .IsFixedLength();
 
-                entity.Property(e => e.Image).HasMaxLength(200);
+                entity.Property(e => e.Image).IsUnicode(false);
 
                 entity.Property(e => e.IsAnonymous).HasColumnName("Is_Anonymous");
 
@@ -316,6 +369,32 @@ namespace ReportSystemData.Models
                     .HasForeignKey(d => d.EditorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Task_Account");
+            });
+
+            modelBuilder.Entity<TaskDetail>(entity =>
+            {
+                entity.HasKey(e => new { e.TaskId, e.PostId });
+
+                entity.ToTable("Task_Detail");
+
+                entity.Property(e => e.TaskId).HasColumnName("Task_ID");
+
+                entity.Property(e => e.PostId)
+                    .HasColumnName("Post_ID")
+                    .HasMaxLength(50)
+                    .IsFixedLength();
+
+                entity.HasOne(d => d.Post)
+                    .WithMany(p => p.TaskDetail)
+                    .HasForeignKey(d => d.PostId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Task_Detail_Post");
+
+                entity.HasOne(d => d.Task)
+                    .WithMany(p => p.TaskDetail)
+                    .HasForeignKey(d => d.TaskId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Task_Detail_Task");
             });
 
             OnModelCreatingPartial(modelBuilder);

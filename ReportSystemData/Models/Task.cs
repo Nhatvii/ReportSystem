@@ -9,6 +9,11 @@ namespace ReportSystemData.Models
 {
     public partial class Task
     {
+        public Task()
+        {
+            TaskDetail = new HashSet<TaskDetail>();
+        }
+
         public int TaskId { get; set; }
         public string ReportId { get; set; }
         public string EditorId { get; set; }
@@ -17,5 +22,6 @@ namespace ReportSystemData.Models
         public string Status { get; set; }
 
         public virtual Account Editor { get; set; }
+        public virtual ICollection<TaskDetail> TaskDetail { get; set; }
     }
 }

@@ -1,29 +1,34 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using ReportSystemData.Constants;
 using ReportSystemData.Dtos.Post;
 using ReportSystemData.Models;
+using ReportSystemData.Parameters;
 using ReportSystemData.Repositories;
 using ReportSystemData.Service.Base;
+using ReportSystemData.ViewModel.Post;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ReportSystemData.Service
 {
     public partial interface IPostService : IBaseService<Post>
     {
-        List<PostDTO> GetAllPost();
-        //Report CreatePost(CreatePostViewModel report);
+        List<PostDTO> GetAllPost(PostParameters postParameters);
+        List<PostDTO> GetPostById(string id);
+        Task<Post> CreatePostAsync(CreatePostViewModel post);
     }
     public partial class PostService : BaseService<Post>, IPostService
     {
-        private readonly _24HReportSystemContext _context;
         private readonly IMapper _mapper;
-        public PostService(_24HReportSystemContext context, IMapper mapper, IPostRepository repository) : base(context, repository)
+        public PostService(DbContext context, IMapper mapper, IPostRepository repository) : base(context, repository)
         {
-            this._context = context;
-            this._mapper = mapper;
+            _dbContext = context;
+            _mapper = mapper;
         }
 
         //public Post CreatePost(CreatePost createPost)
@@ -86,22 +91,78 @@ namespace ReportSystemData.Service
         //    return false;
         //}
 
-        public List<PostDTO> GetAllPost()
+        public List<PostDTO> GetAllPost(PostParameters postParameters)
         {
-            var posts = _context.Post.ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
-            return posts;
+            var post = Get().Include(p => p.Category)
+                .Include(p => p.Editor).ThenInclude(p => p.AccountInfo)
+                .ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
+            if (postParameters.postID != null)
+            {
+                post = GetPostById(postParameters.postID);
+            }
+            if (postParameters.isPublic != null)
+            {
+                post = GetPostIsPublic(postParameters.isPublic);
+            }
+            if (postParameters.isViewCount != null)
+            {
+                if ((bool)postParameters.isViewCount)
+                {
+                    post = post.OrderByDescending(p => p.ViewCount).ToList();
+                }
+                else
+                {
+                    post = post.OrderBy(p => p.ViewCount).ToList();
+                }
+            }
+            if (postParameters.isRecentDate != null)
+            {
+                if ((bool)postParameters.isRecentDate)
+                {
+                    post = post.OrderByDescending(p => p.PublicTime).ToList();
+                }
+                else
+                {
+                    post = post.OrderBy(p => p.PublicTime).ToList();
+                }
+            }
+
+            return post;
         }
 
-        //public Post GetPostById(int id)
-        //{
-        //    var post = _context.Post.FirstOrDefault(post => post.PostId == id);
-        //    if (post != null)
-        //    {
-        //        return post;
-        //    }
-        //    return null;
-        //}
+        public List<PostDTO> GetPostById(string id)
+        {
+            var post = Get().Where(r => r.PostId == id).Include(p => p.Category)
+                .Include(p => p.Editor).ThenInclude(p => p.AccountInfo)
+                .ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
+            return post;
+        }
 
+        public List<PostDTO> GetPostIsPublic(bool? isPublic)
+        {
+            var post = new List<PostDTO>();
+            if ((bool)isPublic)
+            {
+                post = Get().Where(p => p.Status.Equals(PostConstrants.STATUS_POST_PUBLIC)).ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
+            }
+            else
+            {
+                post = Get().Where(p => p.Status.Equals(PostConstrants.STATUS_POST_HIDDEN)).ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
+            }
+            return post;
+        }
+
+        public async Task<Post> CreatePostAsync(CreatePostViewModel post)
+        {
+            var postTmp = _mapper.Map<Post>(post);
+            postTmp.PostId = Guid.NewGuid().ToString();
+            postTmp.CreateTime = DateTime.Now;
+            postTmp.ViewCount = 0;
+            postTmp.EditorId = "nhatvii@gmail.com";
+            postTmp.Status = PostConstrants.STATUS_POST_HIDDEN;
+            await CreateAsyn(postTmp);
+            return postTmp;
+        }
         //public bool UpdatePost(int id, UpdatePost updatePost)
         //{
         //    var post = _context.Post.FirstOrDefault(post => post.PostId == id);

@@ -32,11 +32,11 @@ namespace ReportSystemAPI.Controllers
         {
             return Ok(await _repository.CreateReportAsync(report));
         }
-        //[HttpGet("{id}")]
-        //[Produces("application/json")]
-        //public ActionResult<Report> GetReportByID(int id)
-        //{
-        //    return Ok(_repository.GetAllReport());
-        //}
+        [HttpGet("{id}")]
+        [Produces("application/json")]
+        public ActionResult<Report> GetReportByID(string id)
+        {
+            return Ok(_repository.GetReportByID(id));
+        }
     }
 }

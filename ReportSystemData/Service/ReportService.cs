@@ -22,6 +22,7 @@ namespace ReportSystemData.Service
         Task<Report> CreateReportAsync(CreateReportViewModel report);
         List<ReportDTO> GetAllReport();
         Report UpdateReport(UpdateReportViewModel report);
+        List<Report> GetReportByID(string id);
     }
     public partial class ReportService : BaseService<Report>, IReportService
     {
@@ -34,33 +35,6 @@ namespace ReportSystemData.Service
 
         public async Task<Report> CreateReportAsync(CreateReportViewModel report)
         {
-            //var AccountFlag = false;
-            //foreach (Account tmp in _context.Account.ToList())
-            //{
-            //    if (tmp.Email.Trim().Equals(report.UserId.Trim()))
-            //    {
-            //        AccountFlag = true;
-            //        break;
-            //    }
-            //}
-            //var CateFlag = false;
-            //foreach (Category tmp in _context.Category.ToList())
-            //{
-            //    if (tmp.CategoryId.Trim().Equals(report.CategoryId.Trim()))
-            //    {
-            //        CateFlag = true;
-            //        break;
-            //    }
-            //}
-
-            //if (!AccountFlag)
-            //{
-            //    throw new ErrorResponse("Account not Found", (int)HttpStatusCode.NotFound);
-            //}
-            //else if (!CateFlag)
-            //{
-            //    throw new ErrorResponse("Category not Found", (int)HttpStatusCode.NotFound);
-            //}
             var reportTmp = _mapper.Map<Report>(report);
             reportTmp.ReportId = Guid.NewGuid().ToString();
             reportTmp.CreateTime = DateTime.Now;
@@ -81,6 +55,12 @@ namespace ReportSystemData.Service
         public Report UpdateReport(UpdateReportViewModel report)
         {
             return null;
+        }
+
+        public List<Report> GetReportByID(string id)
+        {
+            var report = Get().Where(r => r.ReportId == id).ToList();
+            return report;
         }
     }
 }

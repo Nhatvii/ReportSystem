@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ReportSystemData.Models;
+using ReportSystemData.Parameters;
 using ReportSystemData.Service;
+using ReportSystemData.ViewModel.Post;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,36 +21,25 @@ namespace ReportSystemAPI.Controllers
 
         [HttpGet]
         [Produces("application/json")]
-        public ActionResult<Post> GetAllPost()
+        public ActionResult<Post> GetAllPost([FromQuery] PostParameters postParameter)
         {
-            return Ok(_repository.GetAllPost());
+            return Ok(_repository.GetAllPost(postParameter));
         }
 
-        //[HttpGet("{id}")]
-        //[Produces("application/json")]
-        //public ActionResult<Post> GetPostById(int id)
-        //{
-        //    var post = _repository.GetPostById(id);
-        //    if (post != null)
-        //    {
-        //        return Ok(post);
-        //    }
-        //    else
-        //    {
-        //        return NotFound();
-        //    }
-        //}
+        [HttpGet("{id}")]
+        [Produces("application/json")]
+        public ActionResult<Post> GetPostById(string id)
+        {
+            return Ok(_repository.GetPostById(id));
+        }
 
-        //[HttpPost]
-        //public ActionResult<Post> CreatePost(CreatePost post)
-        //{
-        //    var result = _repository.CreatePost(post);
-        //    if (result != null)
-        //    {
-        //        return Ok(result);
-        //    }
-        //    return NotFound("Create Error!!!");
-        //}
+        [HttpPost]
+        [Produces("application/json")]
+        public async Task<IActionResult> CreatePost(CreatePostViewModel post)
+        {
+            return Ok(await _repository.CreatePostAsync(post));
+        }
+
         //[HttpPut("{id}")]
         //[Produces("application/json")]
         //public ActionResult<Post> UpdatePost(int id, UpdatePost post)

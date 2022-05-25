@@ -4,6 +4,7 @@ using ReportSystemData.Dtos.Post;
 using ReportSystemData.Dtos.Report;
 using ReportSystemData.Models;
 using ReportSystemData.Parameter.Report;
+using ReportSystemData.ViewModel.Post;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,6 +21,7 @@ namespace ReportSystemData.AutoMapper
             CreateMap<CreateReportViewModel, Report>();
 
             CreateMap<Post, PostDTO>();
+            CreateMap<CreatePostViewModel, Post>();
         }
     }
 }
