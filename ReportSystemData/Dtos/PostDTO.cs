@@ -9,7 +9,7 @@ namespace ReportSystemData.Dtos.Post
     {
         public string PostId { get; set; }
         public string Title { get; set; }
-        public string CategoryId { get; set; }
+        public int CategoryId { get; set; }
         public DateTime CreateTime { get; set; }
         public DateTime? PublicTime { get; set; }
         public string Description { get; set; }

@@ -4,8 +4,9 @@ using System.Text;
 
 namespace ReportSystemData.Parameters
 {
-    public class ReportParameters
+    public class LoginPara
     {
-        public int? status { get; set; }
+        public string email { get; set; }
+        public string password { get; set; }
     }
 }

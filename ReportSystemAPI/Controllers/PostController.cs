@@ -40,27 +40,26 @@ namespace ReportSystemAPI.Controllers
             return Ok(await _repository.CreatePostAsync(post));
         }
 
-        //[HttpPut("{id}")]
-        //[Produces("application/json")]
-        //public ActionResult<Post> UpdatePost(int id, UpdatePost post)
-        //{
-        //    var result = _repository.UpdatePost(id, post);
-        //    if (result)
-        //    {
-        //        return Ok("Update Success!!!");
-        //    }
-        //    return NotFound("Update Error!!!");
-        //}
-        //[HttpDelete("{id}")]
-        //[Produces("application/json")]
-        //public ActionResult<StatusCodeResult> DeletePost(int id)
-        //{
-        //    var result = _repository.DeletePost(id);
-        //    if (result)
-        //    {
-        //        return Ok("Delete Success!!!");
-        //    }
-        //    return NotFound("Delete Error!!!");
-        //}
+        [HttpPut]
+        [Produces("application/json")]
+        public ActionResult<Post> UpdatePost(UpdatePostViewModel post)
+        {
+            return Ok(_repository.UpdatePost(post));
+        }
+
+        [HttpPut]
+        [Produces("application/json")]
+        [Route("EditIsPublic")]
+        public ActionResult<Post> UpdatePublicPost(UpdatePublicPostViewModel post)
+        {
+            return Ok(_repository.UpdatePublicPost(post));
+        }
+
+        [HttpDelete("{id}")]
+        [Produces("application/json")]
+        public ActionResult DeletePost(string id)
+        {
+            return Ok(_repository.DeletePost(id));
+        }
     }
 }

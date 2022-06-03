@@ -7,6 +7,8 @@ namespace ReportSystemData.Parameter.Report
 {
     public class CreateReportViewModel
     {
+        [Required]
+        public string UserID { get; set; }
         [StringLength(200)]
         [Required]
         public string Location { get; set; }
@@ -16,10 +18,8 @@ namespace ReportSystemData.Parameter.Report
         [Required]
         public string Description { get; set; }
         [StringLength(200)]
-        [Required]
         public string Video { get; set; }
         [StringLength(200)]
-        [Required]
         public string Image { get; set; }
         [Required]
         public bool? IsAnonymous { get; set; }

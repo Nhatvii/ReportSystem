@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace ReportSystemData.Dtos.Comment
+namespace ReportSystemData.ViewModel.Post
 {
-    public class DeleteCommentDTO
+    public class UpdatePublicPostViewModel
     {
         [Required]
-        public int PostId { get; set; }
+        public string PostId { get; set; }
         [Required]
-        public int CommentId { get; set; }
+        public int Status { get; set; }
     }
 }

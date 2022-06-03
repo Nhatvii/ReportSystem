@@ -32,11 +32,7 @@ namespace ReportSystemData.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=localhost;Database=24HReportSystem;Trusted_Connection=True;");
-            }
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,14 +41,11 @@ namespace ReportSystemData.Models
             {
                 entity.HasKey(e => e.Email);
 
-                entity.Property(e => e.Email)
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                entity.Property(e => e.Email).HasMaxLength(50);
 
                 entity.Property(e => e.Password)
                     .IsRequired()
-                    .HasMaxLength(20)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.RoleId).HasColumnName("Role_ID");
 
@@ -69,9 +62,7 @@ namespace ReportSystemData.Models
 
                 entity.ToTable("Account_Info");
 
-                entity.Property(e => e.Email)
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                entity.Property(e => e.Email).HasMaxLength(50);
 
                 entity.Property(e => e.Address).HasMaxLength(200);
 
@@ -98,7 +89,7 @@ namespace ReportSystemData.Models
             {
                 entity.Property(e => e.CategoryId)
                     .HasColumnName("Category_ID")
-                    .HasMaxLength(50);
+                    .ValueGeneratedNever();
 
                 entity.Property(e => e.Type)
                     .IsRequired()
@@ -123,8 +114,7 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.PostId)
                     .IsRequired()
                     .HasColumnName("Post_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -134,8 +124,7 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.UserId)
                     .IsRequired()
                     .HasColumnName("User_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.Comment)
@@ -156,13 +145,11 @@ namespace ReportSystemData.Models
 
                 entity.Property(e => e.PostId)
                     .HasColumnName("Post_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.UserId)
                     .HasColumnName("User_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.EmotionStatus).HasColumnName("Emotion_Status");
 
@@ -183,13 +170,9 @@ namespace ReportSystemData.Models
             {
                 entity.Property(e => e.PostId)
                     .HasColumnName("Post_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
-
-                entity.Property(e => e.CategoryId)
-                    .IsRequired()
-                    .HasColumnName("Category_ID")
                     .HasMaxLength(50);
+
+                entity.Property(e => e.CategoryId).HasColumnName("Category_ID");
 
                 entity.Property(e => e.CreateTime)
                     .HasColumnName("Create_Time")
@@ -200,12 +183,13 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.EditorId)
                     .IsRequired()
                     .HasColumnName("Editor_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Image)
                     .IsRequired()
                     .IsUnicode(false);
+
+                entity.Property(e => e.IsDelete).HasColumnName("Is_Delete");
 
                 entity.Property(e => e.PublicTime)
                     .HasColumnName("Public_Time")
@@ -247,13 +231,9 @@ namespace ReportSystemData.Models
             {
                 entity.Property(e => e.ReportId)
                     .HasColumnName("Report_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
-
-                entity.Property(e => e.CategoryId)
-                    .IsRequired()
-                    .HasColumnName("Category_ID")
                     .HasMaxLength(50);
+
+                entity.Property(e => e.CategoryId).HasColumnName("Category_ID");
 
                 entity.Property(e => e.CreateTime)
                     .HasColumnName("Create_Time")
@@ -265,12 +245,13 @@ namespace ReportSystemData.Models
 
                 entity.Property(e => e.EditorId)
                     .HasColumnName("Editor_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Image).IsUnicode(false);
 
                 entity.Property(e => e.IsAnonymous).HasColumnName("Is_Anonymous");
+
+                entity.Property(e => e.IsDelete).HasColumnName("Is_Delete");
 
                 entity.Property(e => e.Location)
                     .IsRequired()
@@ -278,8 +259,7 @@ namespace ReportSystemData.Models
 
                 entity.Property(e => e.StaffId)
                     .HasColumnName("Staff_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -293,8 +273,7 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.UserId)
                     .IsRequired()
                     .HasColumnName("User_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Video).HasMaxLength(200);
 
@@ -350,8 +329,7 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.EditorId)
                     .IsRequired()
                     .HasColumnName("Editor_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.ReportId)
                     .IsRequired()
@@ -381,8 +359,7 @@ namespace ReportSystemData.Models
 
                 entity.Property(e => e.PostId)
                     .HasColumnName("Post_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.TaskDetail)

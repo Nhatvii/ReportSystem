@@ -4,6 +4,7 @@ using ReportSystemData.Dtos.Post;
 using ReportSystemData.Dtos.Report;
 using ReportSystemData.Models;
 using ReportSystemData.Parameter.Report;
+using ReportSystemData.ViewModel.Category;
 using ReportSystemData.ViewModel.Post;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,14 @@ namespace ReportSystemData.AutoMapper
 
             CreateMap<Post, PostDTO>();
             CreateMap<CreatePostViewModel, Post>();
+
+            CreateMap<Account, AccountDTO>();
+
+            CreateMap<Category, CategoryDTO>();
+            CreateMap<CategoryDTO, Category>();
+            CreateMap<Category, CreateCategoryViewModel>();
+            CreateMap<CreateCategoryViewModel, Category>();
+
         }
     }
 }

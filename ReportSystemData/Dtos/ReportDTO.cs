@@ -12,7 +12,7 @@ namespace ReportSystemData.Dtos.Report
         public string Description { get; set; }
         public string Video { get; set; }
         public string Image { get; set; }
-        public string CategoryId { get; set; }
+        public int CategoryId { get; set; }
         public DateTime CreateTime { get; set; }
         public bool? IsAnonymous { get; set; }
         public string StaffId { get; set; }

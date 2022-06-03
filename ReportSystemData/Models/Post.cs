@@ -19,7 +19,7 @@ namespace ReportSystemData.Models
 
         public string PostId { get; set; }
         public string Title { get; set; }
-        public string CategoryId { get; set; }
+        public int CategoryId { get; set; }
         public DateTime CreateTime { get; set; }
         public DateTime? UpdateTime { get; set; }
         public DateTime? PublicTime { get; set; }
@@ -29,6 +29,7 @@ namespace ReportSystemData.Models
         public int ViewCount { get; set; }
         public string EditorId { get; set; }
         public string Status { get; set; }
+        public bool IsDelete { get; set; }
 
         public virtual Category Category { get; set; }
         public virtual Account Editor { get; set; }

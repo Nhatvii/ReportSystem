@@ -16,7 +16,7 @@ namespace ReportSystemData.Models
             Report = new HashSet<Report>();
         }
 
-        public string CategoryId { get; set; }
+        public int CategoryId { get; set; }
         public string Type { get; set; }
 
         [JsonIgnore]

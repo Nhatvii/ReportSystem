@@ -8,6 +8,7 @@ namespace ReportSystemData.Constants
     {
         public const string STATUS_REPORT_NEW = "New";
         public const string STATUS_REPORT_PENDING = "Pending";
-        public const string STATUS_REPORT_APPROVE = "Approve";
+        public const string STATUS_REPORT_APPROVE = "Approved";
+        public const string STATUS_REPORT_DENIED = "Denied";
     }
 }

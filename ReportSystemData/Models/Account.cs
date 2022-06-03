@@ -23,6 +23,7 @@ namespace ReportSystemData.Models
 
         public string Email { get; set; }
         public string Password { get; set; }
+        [JsonIgnore]
         public int RoleId { get; set; }
 
         public virtual Role Role { get; set; }

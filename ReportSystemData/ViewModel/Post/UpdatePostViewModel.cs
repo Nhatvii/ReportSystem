@@ -5,22 +5,15 @@ using System.Text;
 
 namespace ReportSystemData.ViewModel.Post
 {
-    public class CreatePostViewModel
+    public class UpdatePostViewModel
     {
         [Required]
-        public string UserID { get; set; }
-        [StringLength(200)]
-        [Required]
+        public string PostId { get; set; }
         public string Title { get; set; }
-        [StringLength(50)]
-        [Required]
-        public string CategoryId { get; set; }
-        [Required]
+        public int CategoryId { get; set; }
         public string Description { get; set; }
-        [StringLength(200)]
-        [Required]
         public string Video { get; set; }
-        [Required]
         public string Image { get; set; }
+        public string EditorId { get; set; }
     }
 }
