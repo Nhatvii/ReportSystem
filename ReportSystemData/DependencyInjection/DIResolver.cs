@@ -30,6 +30,15 @@ namespace ReportSystemData.DependencyInjection
 
             services.AddScoped<IAccountInfoService, AccountInfoService>();
             services.AddScoped<IAccountInfoRepository, AccountInfoRepository>();
+
+            services.AddScoped<IReportDetailService, ReportDetailService>();
+            services.AddScoped<IReportDetailRepository, ReportDetailRepository>();
+
+            services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
+
+            services.AddScoped<IEmotionService, EmotionService>();
+            services.AddScoped<IEmotionRepository, EmotionRepository>();
         }
     }
 }

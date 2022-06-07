@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 // Code scaffolded by EF Core assumes nullable reference types (NRTs) are not used or disabled.
@@ -13,7 +14,9 @@ namespace ReportSystemData.Models
         public string UserId { get; set; }
         public bool EmotionStatus { get; set; }
 
+        [JsonIgnore]
         public virtual Post Post { get; set; }
+        [JsonIgnore]
         public virtual Account User { get; set; }
     }
 }

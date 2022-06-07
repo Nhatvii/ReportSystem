@@ -12,6 +12,9 @@ namespace ReportSystemData.ViewModel.Post
         [StringLength(200)]
         [Required]
         public string Title { get; set; }
+        [StringLength(300)]
+        [Required]
+        public string SubTitle { get; set; }
         [StringLength(50)]
         [Required]
         public string CategoryId { get; set; }

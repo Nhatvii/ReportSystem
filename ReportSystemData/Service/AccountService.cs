@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using ReportSystemData.Dtos;
 using ReportSystemData.Models;
 using ReportSystemData.Parameters;
 using ReportSystemData.Repositories;
@@ -19,34 +18,30 @@ namespace ReportSystemData.Service
 {
     public partial interface IAccountService : IBaseService<Account>
     {
-        List<AccountDTO> GetAllAccount();
-        AccountDTO Login(LoginPara login);
+        List<Account> GetAllAccount();
+        Account Login(LoginPara login);
         bool CheckAvaiAccount(string email);
-        Task<Account> RegisterAsync(CreateAccountViewModel account);
+        Task<SuccessResponse> RegisterAsync(CreateAccountViewModel account);
         Account GetAccountByID(string email);
     }
     public partial class AccountService : BaseService<Account>, IAccountService
     {
-        private readonly IMapper _mapper;
         private readonly IAccountInfoService _accountInfoService;
-        public AccountService(DbContext context, IMapper mapper, IAccountRepository repository, IAccountInfoService accountInfoService) : base(context, repository)
+        public AccountService(DbContext context, IAccountRepository repository, IAccountInfoService accountInfoService) : base(context, repository)
         {
             _dbContext = context;
-            _mapper = mapper;
             _accountInfoService = accountInfoService;
         }
-        public List<AccountDTO> GetAllAccount()
+        public List<Account> GetAllAccount()
         {
-            var account = Get().Include(role => role.Role).Include(info => info.AccountInfo)
-                .ProjectTo<AccountDTO>(_mapper.ConfigurationProvider).ToList();
+            var account = Get().Include(role => role.Role).Include(info => info.AccountInfo).ToList();
             return account;
         }
 
-        public AccountDTO Login(LoginPara login)
+        public Account Login(LoginPara login)
         {
             var account = Get().Where(acc => acc.Email.Equals(login.email) && acc.Password.Equals(login.password))
-                .Include(role => role.Role).Include(info => info.AccountInfo)
-                .ProjectTo<AccountDTO>(_mapper.ConfigurationProvider).FirstOrDefault();
+                .Include(role => role.Role).Include(info => info.AccountInfo).FirstOrDefault();
             if (account == null)
             {
                 throw new ErrorResponse("Invalid email or password!!!", (int)HttpStatusCode.NotFound);
@@ -79,7 +74,7 @@ namespace ReportSystemData.Service
             return false;
         }
 
-        public async Task<Account> RegisterAsync(CreateAccountViewModel account)
+        public async Task<SuccessResponse> RegisterAsync(CreateAccountViewModel account)
         {
             var checkAccount = CheckAvaiAccount(account.Email);
             if(!checkAccount)
@@ -105,7 +100,7 @@ namespace ReportSystemData.Service
                     var acc = GetAccountByID(account.Email);
                     if(acc != null)
                     {
-                        return acc;
+                        return new SuccessResponse((int)HttpStatusCode.OK, "Create Success");
                     }
                     throw new ErrorResponse("Email not found!!!", (int)HttpStatusCode.NotFound);
                 }

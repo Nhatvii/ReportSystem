@@ -19,6 +19,8 @@ namespace ReportSystemData.Models
 
         public string PostId { get; set; }
         public string Title { get; set; }
+        public string SubTitle { get; set; }
+        [JsonIgnore]
         public int CategoryId { get; set; }
         public DateTime CreateTime { get; set; }
         public DateTime? UpdateTime { get; set; }

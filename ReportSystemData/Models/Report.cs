@@ -10,12 +10,16 @@ namespace ReportSystemData.Models
 {
     public partial class Report
     {
+        public Report()
+        {
+            ReportDetail = new HashSet<ReportDetail>();
+        }
+
         public string ReportId { get; set; }
         public string Location { get; set; }
         public DateTime TimeFraud { get; set; }
         public string Description { get; set; }
-        public string Video { get; set; }
-        public string Image { get; set; }
+        [JsonIgnore]
         public int CategoryId { get; set; }
         public DateTime CreateTime { get; set; }
         public bool? IsAnonymous { get; set; }
@@ -25,7 +29,6 @@ namespace ReportSystemData.Models
         public string Status { get; set; }
         public bool IsDelete { get; set; }
 
-        [JsonIgnore]
         public virtual Category Category { get; set; }
         [JsonIgnore]
         public virtual Account Editor { get; set; }
@@ -33,5 +36,6 @@ namespace ReportSystemData.Models
         public virtual Account Staff { get; set; }
         [JsonIgnore]
         public virtual Account User { get; set; }
+        public virtual ICollection<ReportDetail> ReportDetail { get; set; }
     }
 }

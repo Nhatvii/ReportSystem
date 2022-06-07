@@ -17,8 +17,6 @@ namespace ReportSystemData.Models
         public int TaskId { get; set; }
         public string ReportId { get; set; }
         public string EditorId { get; set; }
-        public DateTime CreateTime { get; set; }
-        public DateTime DeadLineTime { get; set; }
         public string Status { get; set; }
 
         public virtual Account Editor { get; set; }

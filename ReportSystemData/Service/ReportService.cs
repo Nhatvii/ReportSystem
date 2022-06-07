@@ -2,7 +2,6 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using ReportSystemData.Constants;
-using ReportSystemData.Dtos.Report;
 using ReportSystemData.Models;
 using ReportSystemData.Parameter.Report;
 using ReportSystemData.Parameters;
@@ -21,138 +20,146 @@ namespace ReportSystemData.Service
 
     public partial interface IReportService : IBaseService<Report>
     {
-        Task<Report> CreateReportAsync(CreateReportViewModel report);
-        List<ReportDTO> GetAllReport(ReportParameters reportParameters);
-        Report UpdateReport(UpdateReportViewModel report);
-        List<Report> GetReportByID(string id);
-        public Report ChangeReportStatus(string id, int status);
-        ReportDTO DeleteReport(string id);
+        Task<SuccessResponse> CreateReportAsync(CreateReportViewModel report);
+        List<Report> GetAllReport(ReportParameters reportParameters);
+        SuccessResponse UpdateReport(UpdateReportViewModel report);
+        Report GetReportByID(string id);
+        public SuccessResponse ChangeReportStatus(string id, int status);
+        SuccessResponse DeleteReport(string id);
+        SuccessResponse ChangeReportCategory(string id, int categoryID);
     }
     public partial class ReportService : BaseService<Report>, IReportService
     {
         private readonly IMapper _mapper;
         private readonly ICategoryService _categoryService;
         private readonly IAccountService _accountService;
+        private readonly IReportDetailService _reportDetailService;
         public ReportService(DbContext context, IMapper mapper, IReportRepository repository,
-            ICategoryService categoryService, IAccountService accountService) : base(context, repository)
+            ICategoryService categoryService, IAccountService accountService, IReportDetailService reportDetailService) : base(context, repository)
         {
             _dbContext = context;
             _mapper = mapper;
             _categoryService = categoryService;
             _accountService = accountService;
+            _reportDetailService = reportDetailService;
         }
-        public List<ReportDTO> GetAllReport(ReportParameters reportParameters)
+        public List<Report> GetAllReport(ReportParameters reportParameters)
         {
-            var reports = Get().Where(r => r.IsDelete == false)
-                .ProjectTo<ReportDTO>(_mapper.ConfigurationProvider).ToList();
-            if(reportParameters.status.HasValue && reportParameters.status > 0)
+            var reports = Get().Where(r => r.IsDelete == false).Include(detail => detail.ReportDetail).ToList();
+            if (reportParameters.Status.HasValue && reportParameters.Status > 0)
             {
-                reports = GetListReportWithStatus(reportParameters.status);
+                reports = GetListReportWithStatus(reportParameters.Status);
             }
             return reports;
         }
 
-        public List<ReportDTO> GetListReportWithStatus(int? status)
+        public List<Report> GetListReportWithStatus(int? status)
         {
-            var report = new List<ReportDTO>();
-            if(status == 1)
+            var report = new List<Report>();
+            if (status == 1)
             {
-                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_NEW))
-                        .ProjectTo<ReportDTO>(_mapper.ConfigurationProvider).ToList();
+                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_NEW)).Include(detail => detail.ReportDetail).ToList();
             }
             if (status == 2)
             {
-                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_PENDING))
-                        .ProjectTo<ReportDTO>(_mapper.ConfigurationProvider).ToList();
+                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_PENDING)).Include(detail => detail.ReportDetail).ToList();
             }
             if (status == 3)
             {
-                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_APPROVE))
-                        .ProjectTo<ReportDTO>(_mapper.ConfigurationProvider).ToList();
+                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_APPROVE)).Include(detail => detail.ReportDetail).ToList();
             }
             if (status == 4)
             {
-                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_DENIED))
-                        .ProjectTo<ReportDTO>(_mapper.ConfigurationProvider).ToList();
+                report = Get().Where(r => r.IsDelete == false && r.Status.Equals(ReportConstants.STATUS_REPORT_DENIED)).Include(detail => detail.ReportDetail).ToList();
             }
             return report;
         }
-        public async Task<Report> CreateReportAsync(CreateReportViewModel report)
+        public async Task<SuccessResponse> CreateReportAsync(CreateReportViewModel report)
         {
-            var account = _accountService.GetAccountByID(report.UserID);
-            if(account != null)
-            {
-                if(account.RoleId == 1)
-                {
-                    var reportTmp = _mapper.Map<Report>(report);
-                    reportTmp.ReportId = Guid.NewGuid().ToString();
-                    reportTmp.CreateTime = DateTime.Now;
-                    reportTmp.Status = ReportConstants.STATUS_REPORT_NEW;
-                    reportTmp.UserId = report.UserID;
-                    reportTmp.CategoryId = 1;
-                    await CreateAsyn(reportTmp);
-                    return reportTmp;
-                }
-                throw new ErrorResponse("Only User account can create report!!!", (int)HttpStatusCode.NoContent);
-            }
-            throw new ErrorResponse("Unavailable Account!!!", (int)HttpStatusCode.NotFound);
+            //if (report.UserID != null || !report.UserID.Equals("string"))
+            //{
+            //    var account = _accountService.GetAccountByID(report.UserID);
+            //    if (!(account.RoleId == 1))
+            //    {
+            //        throw new ErrorResponse("Only User account can create report!!!", (int)HttpStatusCode.NoContent);
+            //    }
+            //}
+            var reportTmp = _mapper.Map<Report>(report);
+            reportTmp.ReportId = Guid.NewGuid().ToString();
+            reportTmp.CreateTime = DateTime.Now;
+            reportTmp.Status = ReportConstants.STATUS_REPORT_NEW;
+            reportTmp.IsAnonymous = report.IsAnonymous;
+            //if(report.userid.equals("string") || report.userid == null)
+            //{
+            //    reporttmp.userid = null;
+            //}
+            //if(!(report.UserID.Equals("string")) && !string.IsNullOrEmpty(report.UserID))
+            //{
+                reportTmp.UserId = report.UserID;
+            //}
+            //if (!(string.IsNullOrEmpty(report.UserID) || !report.UserID.Equals("string")))
+            //{
+            //    reportTmp.UserId = report.UserID;
+            //}
+            reportTmp.CategoryId = 1;
+            await CreateAsyn(reportTmp);
+            await _reportDetailService.CreateReportDetail(reportTmp.ReportId, report.Image, report.Video);
+            return new SuccessResponse((int)HttpStatusCode.OK, "Create Success");
         }
 
-
-        public Report UpdateReport(UpdateReportViewModel report)
+        public SuccessResponse UpdateReport(UpdateReportViewModel report)
         {
             var checkCate = _categoryService.CheckAvailableCategory(report.CategoryId);
-            if(checkCate)
+            if (checkCate)
             {
                 var reportTmp = Get().Where(rp => rp.ReportId.Equals(report.ReportId)).FirstOrDefault();
-                if(reportTmp != null)
+                if (reportTmp != null)
                 {
-                    if(report.Location != null)
+                    if (report.Location != null)
                     {
-                    reportTmp.Location = report.Location;
+                        reportTmp.Location = report.Location;
                     }
-                    if(report.TimeFraud != null)
+                    if (report.TimeFraud != null)
                     {
-                    reportTmp.TimeFraud = report.TimeFraud;
+                        reportTmp.TimeFraud = report.TimeFraud;
                     }
-                    if(report.Description != null)
+                    if (report.Description != null)
                     {
-                    reportTmp.Description = report.Description;
+                        reportTmp.Description = report.Description;
                     }
-                    if(report.Video != null)
-                    {
-                    reportTmp.Video = report.Video;
-                    }
-                    if(report.Image != null)
-                    {
-                    reportTmp.Image = report.Image;
-                    }
+                    //if (report.Video != null)
+                    //{
+                    //    reportTmp.Video = report.Video;
+                    //}
+                    //if (report.Image != null)
+                    //{
+                    //    reportTmp.Image = report.Image;
+                    //}
                     reportTmp.CategoryId = report.CategoryId;
 
                     Update(reportTmp);
-                    return reportTmp;
+                    return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
                 }
                 throw new ErrorResponse("Report isn't available!", (int)HttpStatusCode.NotFound);
             }
             throw new ErrorResponse("CategoryID isn't available!", (int)HttpStatusCode.NotFound);
         }
-
-        public List<Report> GetReportByID(string id)
+        public Report GetReportByID(string id)
         {
-            var report = Get().Where(r => r.ReportId == id).ToList();
+            var report = Get().Where(r => r.ReportId == id).FirstOrDefault();
             return report;
         }
 
-        public Report ChangeReportStatus(string id, int status)
+        public SuccessResponse ChangeReportStatus(string id, int status)
         {
             var report = Get().Where(r => r.ReportId.Equals(id)).FirstOrDefault();
             if (report != null)
             {
-                if(status == 1)
+                if (status == 1)
                 {
                     report.Status = ReportConstants.STATUS_REPORT_NEW;
                 }
-                if(status == 2)
+                if (status == 2)
                 {
                     report.Status = ReportConstants.STATUS_REPORT_PENDING;
                 }
@@ -165,18 +172,36 @@ namespace ReportSystemData.Service
                     report.Status = ReportConstants.STATUS_REPORT_DENIED;
                 }
                 Update(report);
-                return report;
+                return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
             }
             throw new ErrorResponse("Report isn't available!", (int)HttpStatusCode.NotFound);
         }
 
-        public ReportDTO DeleteReport(string id)
+        public SuccessResponse DeleteReport(string id)
         {
-            var report = Get().Where(r => r.ReportId.Equals(id)).FirstOrDefault();
+            var report = GetReportByID(id);
             if (report != null)
             {
                 report.IsDelete = true;
-                throw new ErrorResponse("Delete success", (int)HttpStatusCode.OK);
+                Update(report);
+                return new SuccessResponse((int)HttpStatusCode.OK, "Delete Success");
+            }
+            throw new ErrorResponse("Report isn't available!", (int)HttpStatusCode.NotFound);
+        }
+
+        public SuccessResponse ChangeReportCategory(string id, int categoryID)
+        {
+            var report = GetReportByID(id);
+            if (report != null)
+            {
+                var checkCate = _categoryService.CheckAvailableCategory(categoryID);
+                if (checkCate)
+                {
+                    report.CategoryId = categoryID;
+                    Update(report);
+                    return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
+                }
+                throw new ErrorResponse("CategoryID isn't available!", (int)HttpStatusCode.NotFound);
             }
             throw new ErrorResponse("Report isn't available!", (int)HttpStatusCode.NotFound);
         }

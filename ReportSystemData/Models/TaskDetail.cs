@@ -11,6 +11,9 @@ namespace ReportSystemData.Models
     {
         public int TaskId { get; set; }
         public string PostId { get; set; }
+        public DateTime CreateTime { get; set; }
+        public DateTime DeadLineTime { get; set; }
+        public string Status { get; set; }
 
         public virtual Post Post { get; set; }
         public virtual Task Task { get; set; }

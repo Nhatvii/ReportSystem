@@ -2,7 +2,6 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using ReportSystemData.Constants;
-using ReportSystemData.Dtos.Post;
 using ReportSystemData.Models;
 using ReportSystemData.Parameters;
 using ReportSystemData.Repositories;
@@ -20,12 +19,12 @@ namespace ReportSystemData.Service
 {
     public partial interface IPostService : IBaseService<Post>
     {
-        List<PostDTO> GetAllPost(PostParameters postParameters);
-        PostDTO GetPostById(string id);
-        Task<Post> CreatePostAsync(CreatePostViewModel post);
-        Post UpdatePost(UpdatePostViewModel post);
-        bool UpdatePublicPost(UpdatePublicPostViewModel post);
-        bool DeletePost(string id);
+        List<Post> GetAllPost(PostParameters postParameters);
+        Post GetPostById(string id);
+        Task<SuccessResponse> CreatePostAsync(CreatePostViewModel post);
+        SuccessResponse UpdatePost(UpdatePostViewModel post);
+        SuccessResponse UpdatePublicPost(UpdatePublicPostViewModel post);
+        SuccessResponse DeletePost(string id);
     }
     public partial class PostService : BaseService<Post>, IPostService
     {
@@ -40,14 +39,18 @@ namespace ReportSystemData.Service
             _accountService = accountService;
         }
 
-        public List<PostDTO> GetAllPost(PostParameters postParameters)
+        public List<Post> GetAllPost(PostParameters postParameters)
         {
             var post = Get().Where(p => p.IsDelete == false).Include(p => p.Category)
-                .Include(p => p.Editor).ThenInclude(p => p.AccountInfo)
-                .ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
-            if (postParameters.isPublic != null)
+                .Include(p => p.Editor).ThenInclude(p => p.AccountInfo).ToList();
+            //var post = Get().Include(p => p.Category).Where(p => p.IsDelete == false).ToList();
+            if (postParameters.Status.HasValue && postParameters.Status > 0)
             {
-                post = GetPostIsPublic(postParameters.isPublic);
+                post = GetPostWithStatus(postParameters.Status);
+            }
+            if(postParameters.CategoryID.HasValue && postParameters.CategoryID > 0)
+            {
+                post = post.Where(cate => cate.CategoryId == postParameters.CategoryID).ToList();
             }
             if (postParameters.isViewCount != null)
             {
@@ -71,33 +74,39 @@ namespace ReportSystemData.Service
                     post = post.OrderBy(p => p.PublicTime).ToList();
                 }
             }
-
+            if (postParameters.EditorID != null)
+            {
+                post = post.Where(p => p.EditorId.Equals(postParameters.EditorID)).ToList();
+            }
             return post;
         }
 
-        public PostDTO GetPostById(string id)
+        public Post GetPostById(string id)
         {
             var post = Get().Where(r => r.PostId == id).Include(p => p.Category)
-                .Include(p => p.Editor).ThenInclude(p => p.AccountInfo)
-                .ProjectTo<PostDTO>(_mapper.ConfigurationProvider).FirstOrDefault();
+                .Include(p => p.Editor).ThenInclude(p => p.AccountInfo).FirstOrDefault();
             return post;
         }
 
-        public List<PostDTO> GetPostIsPublic(bool? isPublic)
+        public List<Post> GetPostWithStatus(int? status)
         {
-            var post = new List<PostDTO>();
-            if ((bool)isPublic)
+            var post = new List<Post>();
+            if (status == 1)
             {
-                post = Get().Where(p => p.Status.Equals(PostConstrants.STATUS_POST_PUBLIC)).ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
+                post = Get().Where(p => p.Status.Equals(PostConstrants.STATUS_POST_DRAFT)).ToList();
             }
-            else
+            if (status == 2)
             {
-                post = Get().Where(p => p.Status.Equals(PostConstrants.STATUS_POST_HIDDEN)).ProjectTo<PostDTO>(_mapper.ConfigurationProvider).ToList();
+                post = Get().Where(p => p.Status.Equals(PostConstrants.STATUS_POST_HIDDEN)).ToList();
+            }
+            if (status == 3)
+            {
+                post = Get().Where(p => p.Status.Equals(PostConstrants.STATUS_POST_PUBLIC)).ToList();
             }
             return post;
         }
 
-        public async Task<Post> CreatePostAsync(CreatePostViewModel post)
+        public async Task<SuccessResponse> CreatePostAsync(CreatePostViewModel post)
         {
             var account = _accountService.GetAccountByID(post.UserID);
             if(account != null)
@@ -109,15 +118,15 @@ namespace ReportSystemData.Service
                     postTmp.CreateTime = DateTime.Now;
                     postTmp.ViewCount = 0;
                     postTmp.EditorId = post.UserID;
-                    postTmp.Status = PostConstrants.STATUS_POST_HIDDEN;
+                    postTmp.Status = PostConstrants.STATUS_POST_DRAFT;
                     await CreateAsyn(postTmp);
-                    return postTmp;
+                    return new SuccessResponse((int)HttpStatusCode.OK, "Create Success");
                 }
                 throw new ErrorResponse("User account can't create report!!!", (int)HttpStatusCode.NoContent);
             }
             throw new ErrorResponse("Unavailable Account!!!", (int)HttpStatusCode.NotFound);
         }
-        public Post UpdatePost(UpdatePostViewModel post)
+        public SuccessResponse UpdatePost(UpdatePostViewModel post)
         {
             var checkAccount = _accountService.CheckAvaiAccount(post.EditorId);
             if(checkAccount)
@@ -149,7 +158,7 @@ namespace ReportSystemData.Service
                             postTmp.Image = post.Image;
                         }
                         Update(postTmp);
-                        return postTmp;
+                        return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
                     }
                     throw new ErrorResponse("Post isn't available!", (int)HttpStatusCode.NotFound);
                 }
@@ -158,34 +167,38 @@ namespace ReportSystemData.Service
             throw new ErrorResponse("EditorID isn't available!", (int)HttpStatusCode.NotFound);
         }
 
-        public bool UpdatePublicPost(UpdatePublicPostViewModel post)
+        public SuccessResponse UpdatePublicPost(UpdatePublicPostViewModel post)
         {
             var postTmp = Get().Where(p => p.PostId.Equals(post.PostId)).FirstOrDefault();
             if (postTmp != null)
             {
-                if(post.Status == 0)
+                if(post.Status == 1)
+                {
+                    postTmp.Status = PostConstrants.STATUS_POST_DRAFT;
+                }
+                if (post.Status == 2)
                 {
                     postTmp.Status = PostConstrants.STATUS_POST_HIDDEN;
                 }
-                if (post.Status == 1)
+                if (post.Status == 3)
                 {
                     postTmp.Status = PostConstrants.STATUS_POST_PUBLIC;
                 }
                 postTmp.PublicTime = DateTime.Now;
                 Update(postTmp);
-                return true;
+                return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
             }
             throw new ErrorResponse("Post isn't available!", (int)HttpStatusCode.NotFound);
         }
 
-        public bool DeletePost(string id)
+        public SuccessResponse DeletePost(string id)
         {
             var postTmp = Get().Where(r => r.PostId.Equals(id)).FirstOrDefault();
             if (postTmp != null)
             {
                 postTmp.IsDelete = true;
-                return true;
-                //throw new ErrorResponse("Delete success", (int)HttpStatusCode.OK);
+                Update(postTmp);
+                return new SuccessResponse((int)HttpStatusCode.OK, "Delete Success");
             }
             throw new ErrorResponse("Post isn't available!", (int)HttpStatusCode.NotFound);
         }

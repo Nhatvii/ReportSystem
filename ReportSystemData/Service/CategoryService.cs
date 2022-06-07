@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using ReportSystemData.Dtos;
 using ReportSystemData.Models;
 using ReportSystemData.Repositories;
 using ReportSystemData.Response;
@@ -18,11 +17,11 @@ namespace ReportSystemData.Service
 {
     public partial interface ICategoryService : IBaseService<Category>
     {
-        List<CategoryDTO> GetAllCategory();
-        List<CategoryDTO> GetCategoryByID(int id);
-        Task<Category> CreateCategoryAsync(CreateCategoryViewModel cate);
-        Category UpdateCategory(UpdateCategoryViewModel cate);
-        CategoryDTO DeleteCategory(int id);
+        List<Category> GetAllCategory();
+        List<Category> GetCategoryByID(int id);
+        Task<SuccessResponse> CreateCategoryAsync(CreateCategoryViewModel cate);
+        SuccessResponse UpdateCategory(UpdateCategoryViewModel cate);
+        SuccessResponse DeleteCategory(int id);
         bool CheckAvailableCategory(int id);
     }
     public partial class CategoryService : BaseService<Category>, ICategoryService
@@ -34,43 +33,43 @@ namespace ReportSystemData.Service
             _mapper = mapper;
         }
 
-        public List<CategoryDTO> GetAllCategory()
+        public List<Category> GetAllCategory()
         {
-            var category = Get().Where(r => r.CategoryId != 1).ProjectTo<CategoryDTO>(_mapper.ConfigurationProvider).ToList();
+            var category = Get().Where(r => r.CategoryId != 1).ToList();
             return category;
         }
 
-        public List<CategoryDTO> GetCategoryByID(int id)
+        public List<Category> GetCategoryByID(int id)
         {
-            var category = Get().Where(r => r.CategoryId == id).ProjectTo<CategoryDTO>(_mapper.ConfigurationProvider).ToList();
+            var category = Get().Where(r => r.CategoryId == id).ToList();
             return category;
         }
 
-        public async Task<Category> CreateCategoryAsync(CreateCategoryViewModel cate)
+        public async Task<SuccessResponse> CreateCategoryAsync(CreateCategoryViewModel cate)
         {
             var cateTmp = _mapper.Map<Category>(cate);
             cateTmp.CategoryId = Get().Count() + 1;
             await CreateAsyn(cateTmp);
-            return cateTmp;
+            return new SuccessResponse((int)HttpStatusCode.OK, "Create Success");
         }
 
-        public Category UpdateCategory(UpdateCategoryViewModel cate)
+        public SuccessResponse UpdateCategory(UpdateCategoryViewModel cate)
         {
             var cateTmp = Get().Where(r => r.CategoryId == cate.CategoryId).FirstOrDefault();
             cateTmp.Type = cate.Type;
             Update(cateTmp);
-            return cateTmp;
+            return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
         }
 
-        public CategoryDTO DeleteCategory(int id)
+        public SuccessResponse DeleteCategory(int id)
         {
             var cate = Get().Where(r => r.CategoryId == id).FirstOrDefault();
             if(cate != null)
             {
                 Delete(cate);
-                throw new ErrorResponse("Delete success", (int)HttpStatusCode.OK);
+                return new SuccessResponse((int)HttpStatusCode.OK, "Delete Success");
             }
-            return null;
+            throw new ErrorResponse("Category isn't available", (int)HttpStatusCode.NotFound);
         }
         public bool CheckAvailableCategory(int id)
         {

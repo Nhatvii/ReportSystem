@@ -6,8 +6,10 @@ namespace ReportSystemData.Parameters
 {
     public class PostParameters
     {
+        public string EditorID { get; set; }
+        public int? Status { get; set; }
+        public int? CategoryID { get; set; }
         public bool? isRecentDate { get; set; }
-        public bool? isPublic { get; set; }
         public bool? isViewCount { get; set; }
     }
 }

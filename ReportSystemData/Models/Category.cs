@@ -18,7 +18,6 @@ namespace ReportSystemData.Models
 
         public int CategoryId { get; set; }
         public string Type { get; set; }
-
         [JsonIgnore]
         public virtual ICollection<Post> Post { get; set; }
         [JsonIgnore]

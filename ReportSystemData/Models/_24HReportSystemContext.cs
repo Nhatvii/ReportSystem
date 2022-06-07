@@ -26,6 +26,7 @@ namespace ReportSystemData.Models
         public virtual DbSet<Emotion> Emotion { get; set; }
         public virtual DbSet<Post> Post { get; set; }
         public virtual DbSet<Report> Report { get; set; }
+        public virtual DbSet<ReportDetail> ReportDetail { get; set; }
         public virtual DbSet<Role> Role { get; set; }
         public virtual DbSet<Task> Task { get; set; }
         public virtual DbSet<TaskDetail> TaskDetail { get; set; }
@@ -125,6 +126,7 @@ namespace ReportSystemData.Models
                     .IsRequired()
                     .HasColumnName("User_ID")
                     .HasMaxLength(50);
+                entity.Property(e => e.IsDelete).HasColumnName("Is_Delete");
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.Comment)
@@ -200,6 +202,11 @@ namespace ReportSystemData.Models
                     .HasMaxLength(20)
                     .IsUnicode(false);
 
+                entity.Property(e => e.SubTitle)
+                    .IsRequired()
+                    .HasColumnName("Sub_Title")
+                    .HasMaxLength(300);
+
                 entity.Property(e => e.Title)
                     .IsRequired()
                     .HasMaxLength(200);
@@ -239,15 +246,11 @@ namespace ReportSystemData.Models
                     .HasColumnName("Create_Time")
                     .HasColumnType("datetime");
 
-                entity.Property(e => e.Description)
-                    .IsRequired()
-                    .HasMaxLength(300);
+                entity.Property(e => e.Description).IsRequired();
 
                 entity.Property(e => e.EditorId)
                     .HasColumnName("Editor_ID")
                     .HasMaxLength(50);
-
-                entity.Property(e => e.Image).IsUnicode(false);
 
                 entity.Property(e => e.IsAnonymous).HasColumnName("Is_Anonymous");
 
@@ -271,11 +274,8 @@ namespace ReportSystemData.Models
                     .HasColumnType("datetime");
 
                 entity.Property(e => e.UserId)
-                    .IsRequired()
                     .HasColumnName("User_ID")
                     .HasMaxLength(50);
-
-                entity.Property(e => e.Video).HasMaxLength(200);
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.Report)
@@ -296,8 +296,29 @@ namespace ReportSystemData.Models
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.ReportUser)
                     .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Report_Account");
+            });
+
+            modelBuilder.Entity<ReportDetail>(entity =>
+            {
+                entity.ToTable("Report_Detail");
+
+                entity.Property(e => e.ReportDetailId).HasColumnName("Report_Detail_ID");
+
+                entity.Property(e => e.Media).IsUnicode(false);
+
+                entity.Property(e => e.ReportId)
+                    .IsRequired()
+                    .HasColumnName("Report_ID")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Type).HasMaxLength(50);
+
+                entity.HasOne(d => d.Report)
+                    .WithMany(p => p.ReportDetail)
+                    .HasForeignKey(d => d.ReportId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Report_Detail_Report");
             });
 
             modelBuilder.Entity<Role>(entity =>
@@ -317,14 +338,6 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.TaskId)
                     .HasColumnName("Task_ID")
                     .ValueGeneratedNever();
-
-                entity.Property(e => e.CreateTime)
-                    .HasColumnName("Create_Time")
-                    .HasColumnType("datetime");
-
-                entity.Property(e => e.DeadLineTime)
-                    .HasColumnName("DeadLine_Time")
-                    .HasColumnType("datetime");
 
                 entity.Property(e => e.EditorId)
                     .IsRequired()
@@ -360,6 +373,19 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.PostId)
                     .HasColumnName("Post_ID")
                     .HasMaxLength(50);
+
+                entity.Property(e => e.CreateTime)
+                    .HasColumnName("Create_Time")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.DeadLineTime)
+                    .HasColumnName("DeadLine_Time")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.TaskDetail)

@@ -68,5 +68,13 @@ namespace ReportSystemAPI.Controllers
         {
             return Ok(_repository.DeleteReport(id));
         }
+
+        [HttpPut]
+        [Produces("application/json")]
+        [Route("CategoryUpdate")]
+        public ActionResult ChangeReportCategory(string id, int categoryID)
+        {
+            return Ok(_repository.ChangeReportCategory(id, categoryID));
+        }
     }
 }
