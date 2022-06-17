@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ReportSystemData.Parameters
+namespace ReportSystemData.ViewModel.Post
 {
-    public class EmotionParameters
+    public class UpdateViewCountViewModel
     {
         public string PostId { get; set; }
         public string UserId { get; set; }
-        public bool? EmotionStatus { get; set; }
-        public bool? IsView { get; set; }
     }
 }

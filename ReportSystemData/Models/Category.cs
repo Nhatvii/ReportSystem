@@ -17,7 +17,10 @@ namespace ReportSystemData.Models
         }
 
         public int CategoryId { get; set; }
-        public string Type { get; set; }
+        public string SubCategory { get; set; }
+        [JsonIgnore]
+        public int RootCategory { get; set; }
+        public virtual RootCategory RootCategoryNavigation { get; set; }
         [JsonIgnore]
         public virtual ICollection<Post> Post { get; set; }
         [JsonIgnore]

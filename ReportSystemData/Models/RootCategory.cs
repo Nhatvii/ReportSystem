@@ -8,14 +8,17 @@ using System.Collections.Generic;
 
 namespace ReportSystemData.Models
 {
-    public partial class ReportDetail
+    public partial class RootCategory
     {
-        public int ReportDetailId { get; set; }
-        public string Media { get; set; }
+        public RootCategory()
+        {
+            Category = new HashSet<Category>();
+        }
+
+        public int RootCategoryId { get; set; }
         public string Type { get; set; }
-        public string ReportId { get; set; }
 
         [JsonIgnore]
-        public virtual Report Report { get; set; }
+        public virtual ICollection<Category> Category { get; set; }
     }
 }

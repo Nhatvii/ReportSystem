@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using ReportSystemData.Constants;
 using ReportSystemData.Models;
@@ -7,13 +6,14 @@ using ReportSystemData.Parameters;
 using ReportSystemData.Repositories;
 using ReportSystemData.Response;
 using ReportSystemData.Service.Base;
+using ReportSystemData.ViewModel.Emotion;
 using ReportSystemData.ViewModel.Post;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
+using Z.EntityFramework.Plus;
 
 namespace ReportSystemData.Service
 {
@@ -25,25 +25,28 @@ namespace ReportSystemData.Service
         SuccessResponse UpdatePost(UpdatePostViewModel post);
         SuccessResponse UpdatePublicPost(UpdatePublicPostViewModel post);
         SuccessResponse DeletePost(string id);
+        Task<SuccessResponse> UpdateViewCount(UpdateViewCountViewModel model);
     }
     public partial class PostService : BaseService<Post>, IPostService
     {
         private readonly IMapper _mapper;
         private readonly ICategoryService _categoryService;
         private readonly IAccountService _accountService;
-        public PostService(DbContext context, IMapper mapper, IPostRepository repository, ICategoryService categoryService, IAccountService accountService) : base(context, repository)
+        private readonly IEmotionService _emotionService;
+        public PostService(DbContext context, IMapper mapper, IPostRepository repository, ICategoryService categoryService, IAccountService accountService, IEmotionService emotionService) : base(context, repository)
         {
             _dbContext = context;
             _mapper = mapper;
             _categoryService = categoryService;
             _accountService = accountService;
+            _emotionService = emotionService;
         }
 
         public List<Post> GetAllPost(PostParameters postParameters)
         {
             var post = Get().Where(p => p.IsDelete == false).Include(p => p.Category)
+                .Include(p => p.Emotion)
                 .Include(p => p.Editor).ThenInclude(p => p.AccountInfo).ToList();
-            //var post = Get().Include(p => p.Category).Where(p => p.IsDelete == false).ToList();
             if (postParameters.Status.HasValue && postParameters.Status > 0)
             {
                 post = GetPostWithStatus(postParameters.Status);
@@ -83,7 +86,7 @@ namespace ReportSystemData.Service
 
         public Post GetPostById(string id)
         {
-            var post = Get().Where(r => r.PostId == id).Include(p => p.Category)
+            var post = Get().Where(r => r.PostId == id).Include(p => p.Category).Include(p => p.Emotion)
                 .Include(p => p.Editor).ThenInclude(p => p.AccountInfo).FirstOrDefault();
             return post;
         }
@@ -201,6 +204,31 @@ namespace ReportSystemData.Service
                 return new SuccessResponse((int)HttpStatusCode.OK, "Delete Success");
             }
             throw new ErrorResponse("Post isn't available!", (int)HttpStatusCode.NotFound);
+        }
+
+        public async Task<SuccessResponse> UpdateViewCount(UpdateViewCountViewModel model)
+        {
+            //var checkAvaiEmo = _emotionService.CheckEmotion(model.PostId, model.UserId);
+            //if(!checkAvaiEmo)
+            //{
+                var statusemo = _mapper.Map<EditStatusEmotion>(model);
+                await _emotionService.CreateEmotionView(statusemo);
+            //}
+
+            var emoPara = new EmotionParameters()
+            {
+                PostId = model.PostId,
+                IsView = true
+            };
+            var listEmo = _emotionService.GetAllEmotion(emoPara);
+            if(listEmo != null)
+            {
+                var post = GetPostById(model.PostId);
+                post.ViewCount = listEmo.Count();
+                Update(post);
+                return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
+            }
+            return new SuccessResponse((int)HttpStatusCode.OK, "Clear");
         }
     }
 }

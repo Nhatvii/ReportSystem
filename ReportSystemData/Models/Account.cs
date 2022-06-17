@@ -18,14 +18,15 @@ namespace ReportSystemData.Models
             ReportEditor = new HashSet<Report>();
             ReportStaff = new HashSet<Report>();
             ReportUser = new HashSet<Report>();
+            ReportView = new HashSet<ReportView>();
             Task = new HashSet<Task>();
         }
 
         public string Email { get; set; }
         public string Password { get; set; }
+        [JsonIgnore]
         public int RoleId { get; set; }
 
-        [JsonIgnore]
         public virtual Role Role { get; set; }
         public virtual AccountInfo AccountInfo { get; set; }
         [JsonIgnore]
@@ -40,6 +41,8 @@ namespace ReportSystemData.Models
         public virtual ICollection<Report> ReportStaff { get; set; }
         [JsonIgnore]
         public virtual ICollection<Report> ReportUser { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<ReportView> ReportView { get; set; }
         [JsonIgnore]
         public virtual ICollection<Task> Task { get; set; }
     }

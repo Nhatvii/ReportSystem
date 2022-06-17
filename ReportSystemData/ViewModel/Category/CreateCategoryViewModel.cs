@@ -7,8 +7,9 @@ namespace ReportSystemData.ViewModel.Category
 {
     public class CreateCategoryViewModel
     {
-        [StringLength(50)]
         [Required]
         public string Type { get; set; }
+        [Required]
+        public int RootCategoryID { get; set; }
     }
 }

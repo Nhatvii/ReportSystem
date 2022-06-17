@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ReportSystemData.Constants;
 using ReportSystemData.Models;
 using ReportSystemData.Parameters;
 using ReportSystemData.Repositories;
@@ -18,6 +19,8 @@ namespace ReportSystemData.Service
     {
         List<Emotion> GetAllEmotion(EmotionParameters emotionParameters);
         Task<SuccessResponse> ChangeStatusEmotion(EditStatusEmotion statusEmotion);
+        bool CheckEmotion(string postID, string userID);
+        Task<SuccessResponse> CreateEmotionView(EditStatusEmotion statusEmotion);
     }
     public partial class EmotionService : BaseService<Emotion>, IEmotionService
     {
@@ -41,6 +44,10 @@ namespace ReportSystemData.Service
             {
                 emotionTmp = emotionTmp.Where(e => e.EmotionStatus == emotionParameters.EmotionStatus).ToList();
             }
+            if (emotionParameters.IsView != null)
+            {
+                emotionTmp = emotionTmp.Where(e => e.IsView == emotionParameters.IsView).ToList();
+            }
             return emotionTmp;
         }
 
@@ -58,9 +65,9 @@ namespace ReportSystemData.Service
                 await CreateAsyn(emo);
                 return new SuccessResponse((int)HttpStatusCode.OK, "Like Success");
             }
-            //if (emotionTmp != null)
-            //{
-                if (emotionTmp.EmotionStatus)
+            else
+            {
+                if (emotionTmp.EmotionStatus == true)
                 {
                     emotionTmp.EmotionStatus = false;
                 }
@@ -70,8 +77,39 @@ namespace ReportSystemData.Service
                 }
                 Update(emotionTmp);
                 return new SuccessResponse((int)HttpStatusCode.OK, "Update Emotion Success");
-            //}
-            //return new SuccessResponse((int)HttpStatusCode.OK, "Update Emotion Success");
+            }
+        }
+        public async Task<SuccessResponse> CreateEmotionView(EditStatusEmotion statusEmotion)
+        {
+            var emotionTmp = CheckEmotion(statusEmotion.PostId, statusEmotion.UserId);
+            if (!emotionTmp)
+            {
+                var emo = new Emotion()
+                {
+                    PostId = statusEmotion.PostId,
+                    UserId = statusEmotion.UserId,
+                    IsView = true
+                };
+                await CreateAsyn(emo);
+                return new SuccessResponse((int)HttpStatusCode.OK, "View Success");
+            }
+            else
+            {
+                var emo = Get().Where(e => e.PostId.Equals(statusEmotion.PostId) && e.UserId.Equals(statusEmotion.UserId)).FirstOrDefault();
+                emo.IsView = true;
+                Update(emo);
+                return new SuccessResponse((int)HttpStatusCode.OK, "View Success");
+            }
+        }
+
+        public bool CheckEmotion(string postID, string userID)
+        {
+            var checkEmo = Get().Where(e => e.PostId.Equals(postID) && e.UserId.Equals(userID)).FirstOrDefault();
+            if (checkEmo != null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -51,9 +51,9 @@ namespace ReportSystemAPI.Controllers
         [HttpPut]
         [Produces("application/json")]
         [Route("StatusUpdate")]
-        public ActionResult ChangeStatus(string id, int status)
+        public ActionResult ChangeStatus(string id, int status, string staffID)
         {
-            return Ok(_repository.ChangeReportStatus(id, status));
+            return Ok(_repository.ChangeReportStatus(id, status, staffID));
         }
 
         //[HttpPut]
@@ -72,9 +72,9 @@ namespace ReportSystemAPI.Controllers
         [HttpPut]
         [Produces("application/json")]
         [Route("CategoryUpdate")]
-        public ActionResult ChangeReportCategory(string id, int categoryID)
+        public ActionResult ChangeReportCategory(string id, int categoryID, string staffID)
         {
-            return Ok(_repository.ChangeReportCategory(id, categoryID));
+            return Ok(_repository.ChangeReportCategory(id, categoryID, staffID));
         }
     }
 }

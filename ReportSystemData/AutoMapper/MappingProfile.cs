@@ -3,6 +3,7 @@ using ReportSystemData.Models;
 using ReportSystemData.Parameter.Report;
 using ReportSystemData.ViewModel.Category;
 using ReportSystemData.ViewModel.Comment;
+using ReportSystemData.ViewModel.Emotion;
 using ReportSystemData.ViewModel.Post;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace ReportSystemData.AutoMapper
             CreateMap<Category, CreateCategoryViewModel>();
             CreateMap<CreateCategoryViewModel, Category>();
 
+            CreateMap<UpdateViewCountViewModel, EditStatusEmotion>();
         }
     }
 }

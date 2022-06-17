@@ -8,14 +8,14 @@ using System.Collections.Generic;
 
 namespace ReportSystemData.Models
 {
-    public partial class ReportDetail
+    public partial class ReportView
     {
-        public int ReportDetailId { get; set; }
-        public string Media { get; set; }
-        public string Type { get; set; }
         public string ReportId { get; set; }
-
+        public string UserId { get; set; }
+        public bool IsView { get; set; }
         [JsonIgnore]
         public virtual Report Report { get; set; }
+        [JsonIgnore]
+        public virtual Account User { get; set; }
     }
 }

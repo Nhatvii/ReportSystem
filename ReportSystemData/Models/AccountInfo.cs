@@ -10,6 +10,7 @@ namespace ReportSystemData.Models
 {
     public partial class AccountInfo
     {
+        [JsonIgnore]
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Username { get; set; }

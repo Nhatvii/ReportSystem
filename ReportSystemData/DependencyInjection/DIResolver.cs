@@ -39,6 +39,18 @@ namespace ReportSystemData.DependencyInjection
 
             services.AddScoped<IEmotionService, EmotionService>();
             services.AddScoped<IEmotionRepository, EmotionRepository>();
+
+            services.AddScoped<IReportViewService, ReportViewService>();
+            services.AddScoped<IReportViewRepository, ReportViewRepository>();
+
+            services.AddScoped<IReportTaskService, ReportTaskService>();
+            services.AddScoped<IReportTaskRepository, ReportTaskRepository>();
+
+            services.AddScoped<ITaskService, TaskService>();
+            services.AddScoped<ITaskRepository, TaskRepository>();
+
+            services.AddScoped<IRootCategoryService, RootCategoryService>();
+            services.AddScoped<IRootCategoryRepository, RootCategoryRepository>();
         }
     }
 }

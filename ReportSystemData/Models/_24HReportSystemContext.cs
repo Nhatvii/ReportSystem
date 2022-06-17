@@ -27,9 +27,11 @@ namespace ReportSystemData.Models
         public virtual DbSet<Post> Post { get; set; }
         public virtual DbSet<Report> Report { get; set; }
         public virtual DbSet<ReportDetail> ReportDetail { get; set; }
+        public virtual DbSet<ReportTask> ReportTask { get; set; }
+        public virtual DbSet<ReportView> ReportView { get; set; }
         public virtual DbSet<Role> Role { get; set; }
+        public virtual DbSet<RootCategory> RootCategory { get; set; }
         public virtual DbSet<Task> Task { get; set; }
-        public virtual DbSet<TaskDetail> TaskDetail { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -92,16 +94,25 @@ namespace ReportSystemData.Models
                     .HasColumnName("Category_ID")
                     .ValueGeneratedNever();
 
-                entity.Property(e => e.Type)
+                entity.Property(e => e.RootCategory).HasColumnName("Root_Category");
+
+                entity.Property(e => e.SubCategory)
                     .IsRequired()
+                    .HasColumnName("Sub_Category")
                     .HasMaxLength(50);
+
+                entity.HasOne(d => d.RootCategoryNavigation)
+                    .WithMany(p => p.Category)
+                    .HasForeignKey(d => d.RootCategory)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Category_Root_Category");
             });
 
             modelBuilder.Entity<Comment>(entity =>
             {
                 entity.Property(e => e.CommentId)
                     .HasColumnName("Comment_ID")
-                    .ValueGeneratedNever();
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.CommentTitle)
                     .IsRequired()
@@ -111,6 +122,8 @@ namespace ReportSystemData.Models
                 entity.Property(e => e.CreateTime)
                     .HasColumnName("Create_TIme")
                     .HasColumnType("datetime");
+
+                entity.Property(e => e.IsDelete).HasColumnName("Is_Delete");
 
                 entity.Property(e => e.PostId)
                     .IsRequired()
@@ -126,7 +139,6 @@ namespace ReportSystemData.Models
                     .IsRequired()
                     .HasColumnName("User_ID")
                     .HasMaxLength(50);
-                entity.Property(e => e.IsDelete).HasColumnName("Is_Delete");
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.Comment)
@@ -154,6 +166,8 @@ namespace ReportSystemData.Models
                     .HasMaxLength(50);
 
                 entity.Property(e => e.EmotionStatus).HasColumnName("Emotion_Status");
+
+                entity.Property(e => e.IsView).HasColumnName("Is_View");
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.Emotion)
@@ -207,6 +221,10 @@ namespace ReportSystemData.Models
                     .HasColumnName("Sub_Title")
                     .HasMaxLength(300);
 
+                entity.Property(e => e.TaskId)
+                    .HasColumnName("Task_ID")
+                    .HasMaxLength(50);
+
                 entity.Property(e => e.Title)
                     .IsRequired()
                     .HasMaxLength(200);
@@ -232,6 +250,11 @@ namespace ReportSystemData.Models
                     .HasForeignKey(d => d.EditorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Post_Account");
+
+                entity.HasOne(d => d.Task)
+                    .WithMany(p => p.Post)
+                    .HasForeignKey(d => d.TaskId)
+                    .HasConstraintName("FK_Post_Task");
             });
 
             modelBuilder.Entity<Report>(entity =>
@@ -321,6 +344,71 @@ namespace ReportSystemData.Models
                     .HasConstraintName("FK_Report_Detail_Report");
             });
 
+            modelBuilder.Entity<ReportTask>(entity =>
+            {
+                entity.HasKey(e => new { e.TaskId, e.ReportId });
+
+                entity.ToTable("Report_Task");
+
+                entity.Property(e => e.TaskId)
+                    .HasColumnName("Task_ID")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.ReportId)
+                    .HasColumnName("Report_ID")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.CreateTime)
+                    .HasColumnName("Create_Time")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.Status)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Report)
+                    .WithMany(p => p.ReportTask)
+                    .HasForeignKey(d => d.ReportId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Report_Task_Report");
+
+                entity.HasOne(d => d.Task)
+                    .WithMany(p => p.ReportTask)
+                    .HasForeignKey(d => d.TaskId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Report_Task_Task");
+            });
+
+            modelBuilder.Entity<ReportView>(entity =>
+            {
+                entity.HasKey(e => new { e.ReportId, e.UserId });
+
+                entity.ToTable("Report_View");
+
+                entity.Property(e => e.ReportId)
+                    .HasColumnName("Report_ID")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("User_ID")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.IsView).HasColumnName("Is_View");
+
+                entity.HasOne(d => d.Report)
+                    .WithMany(p => p.ReportView)
+                    .HasForeignKey(d => d.ReportId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Report_View_Report");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.ReportView)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Report_View_Account");
+            });
+
             modelBuilder.Entity<Role>(entity =>
             {
                 entity.Property(e => e.RoleId)
@@ -333,22 +421,39 @@ namespace ReportSystemData.Models
                     .HasMaxLength(50);
             });
 
+            modelBuilder.Entity<RootCategory>(entity =>
+            {
+                entity.ToTable("Root_Category");
+
+                entity.Property(e => e.RootCategoryId)
+                    .HasColumnName("Root_Category_ID")
+                    .ValueGeneratedNever();
+
+                entity.Property(e => e.Type)
+                    .IsRequired()
+                    .HasMaxLength(50);
+            });
+
             modelBuilder.Entity<Task>(entity =>
             {
                 entity.Property(e => e.TaskId)
                     .HasColumnName("Task_ID")
-                    .ValueGeneratedNever();
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.CreateTime)
+                    .HasColumnName("Create_Time")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.DeadLineTime)
+                    .HasColumnName("DeadLine_Time")
+                    .HasColumnType("datetime");
 
                 entity.Property(e => e.EditorId)
                     .IsRequired()
                     .HasColumnName("Editor_ID")
                     .HasMaxLength(50);
 
-                entity.Property(e => e.ReportId)
-                    .IsRequired()
-                    .HasColumnName("Report_ID")
-                    .HasMaxLength(50)
-                    .IsFixedLength();
+                entity.Property(e => e.IsDelete).HasColumnName("Is_Delete");
 
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -360,44 +465,6 @@ namespace ReportSystemData.Models
                     .HasForeignKey(d => d.EditorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Task_Account");
-            });
-
-            modelBuilder.Entity<TaskDetail>(entity =>
-            {
-                entity.HasKey(e => new { e.TaskId, e.PostId });
-
-                entity.ToTable("Task_Detail");
-
-                entity.Property(e => e.TaskId).HasColumnName("Task_ID");
-
-                entity.Property(e => e.PostId)
-                    .HasColumnName("Post_ID")
-                    .HasMaxLength(50);
-
-                entity.Property(e => e.CreateTime)
-                    .HasColumnName("Create_Time")
-                    .HasColumnType("datetime");
-
-                entity.Property(e => e.DeadLineTime)
-                    .HasColumnName("DeadLine_Time")
-                    .HasColumnType("datetime");
-
-                entity.Property(e => e.Status)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.Post)
-                    .WithMany(p => p.TaskDetail)
-                    .HasForeignKey(d => d.PostId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Task_Detail_Post");
-
-                entity.HasOne(d => d.Task)
-                    .WithMany(p => p.TaskDetail)
-                    .HasForeignKey(d => d.TaskId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Task_Detail_Task");
             });
 
             OnModelCreatingPartial(modelBuilder);

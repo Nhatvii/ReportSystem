@@ -4,9 +4,8 @@ using System.Text;
 
 namespace ReportSystemData.Parameters
 {
-    public class ReportParameters
+    public class CommentParameters
     {
-        public int? Status { get; set; }
-        public string StaffID { get; set; }
+        public string PostId { get; set; }
     }
 }

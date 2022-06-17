@@ -24,9 +24,10 @@ namespace ReportSystemData.Service
         List<Report> GetAllReport(ReportParameters reportParameters);
         SuccessResponse UpdateReport(UpdateReportViewModel report);
         Report GetReportByID(string id);
-        public SuccessResponse ChangeReportStatus(string id, int status);
+        public SuccessResponse ChangeReportStatus(string id, int status, string staffID);
         SuccessResponse DeleteReport(string id);
-        SuccessResponse ChangeReportCategory(string id, int categoryID);
+        SuccessResponse ChangeReportCategory(string id, int categoryID, string staffID);
+        SuccessResponse UpdateReportEditor(string reportID, string editorID);
     }
     public partial class ReportService : BaseService<Report>, IReportService
     {
@@ -45,10 +46,17 @@ namespace ReportSystemData.Service
         }
         public List<Report> GetAllReport(ReportParameters reportParameters)
         {
-            var reports = Get().Where(r => r.IsDelete == false).Include(detail => detail.ReportDetail).ToList();
+            var reports = Get().Where(r => r.IsDelete == false)
+                .Include(detail => detail.ReportDetail)
+                .Include(cate => cate.Category)
+                .Include(c => c.ReportView).ToList();
             if (reportParameters.Status.HasValue && reportParameters.Status > 0)
             {
                 reports = GetListReportWithStatus(reportParameters.Status);
+            }
+            if (reportParameters.StaffID != null)
+            {
+                reports = reports.Where(c => (c.StaffId != null) && c.StaffId.Equals(reportParameters.StaffID)).ToList();
             }
             return reports;
         }
@@ -93,15 +101,15 @@ namespace ReportSystemData.Service
             //{
             //    reporttmp.userid = null;
             //}
-            //if(!(report.UserID.Equals("string")) && !string.IsNullOrEmpty(report.UserID))
+            //if (!(report.UserID.Equals("string")) && !string.IsNullOrEmpty(report.UserID))
             //{
                 reportTmp.UserId = report.UserID;
             //}
-            //if (!(string.IsNullOrEmpty(report.UserID) || !report.UserID.Equals("string")))
-            //{
-            //    reportTmp.UserId = report.UserID;
-            //}
-            reportTmp.CategoryId = 1;
+        //if (!(string.IsNullOrEmpty(report.UserID) || !report.UserID.Equals("string")))
+        //{
+        //    reportTmp.UserId = report.UserID;
+        //}
+        reportTmp.CategoryId = 1;
             await CreateAsyn(reportTmp);
             await _reportDetailService.CreateReportDetail(reportTmp.ReportId, report.Image, report.Video);
             return new SuccessResponse((int)HttpStatusCode.OK, "Create Success");
@@ -127,14 +135,6 @@ namespace ReportSystemData.Service
                     {
                         reportTmp.Description = report.Description;
                     }
-                    //if (report.Video != null)
-                    //{
-                    //    reportTmp.Video = report.Video;
-                    //}
-                    //if (report.Image != null)
-                    //{
-                    //    reportTmp.Image = report.Image;
-                    //}
                     reportTmp.CategoryId = report.CategoryId;
 
                     Update(reportTmp);
@@ -146,11 +146,14 @@ namespace ReportSystemData.Service
         }
         public Report GetReportByID(string id)
         {
-            var report = Get().Where(r => r.ReportId == id).FirstOrDefault();
+            var report = Get().Where(r => r.ReportId == id && r.IsDelete == false)
+                .Include(detail => detail.ReportDetail)
+                .Include(cate => cate.Category)
+                .Include(c => c.ReportView).FirstOrDefault();
             return report;
         }
 
-        public SuccessResponse ChangeReportStatus(string id, int status)
+        public SuccessResponse ChangeReportStatus(string id, int status, string staffID)
         {
             var report = Get().Where(r => r.ReportId.Equals(id)).FirstOrDefault();
             if (report != null)
@@ -171,6 +174,7 @@ namespace ReportSystemData.Service
                 {
                     report.Status = ReportConstants.STATUS_REPORT_DENIED;
                 }
+                report.StaffId = staffID;
                 Update(report);
                 return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
             }
@@ -189,7 +193,7 @@ namespace ReportSystemData.Service
             throw new ErrorResponse("Report isn't available!", (int)HttpStatusCode.NotFound);
         }
 
-        public SuccessResponse ChangeReportCategory(string id, int categoryID)
+        public SuccessResponse ChangeReportCategory(string id, int categoryID, string staffID)
         {
             var report = GetReportByID(id);
             if (report != null)
@@ -198,10 +202,23 @@ namespace ReportSystemData.Service
                 if (checkCate)
                 {
                     report.CategoryId = categoryID;
+                    report.StaffId = staffID;
                     Update(report);
                     return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
                 }
                 throw new ErrorResponse("CategoryID isn't available!", (int)HttpStatusCode.NotFound);
+            }
+            throw new ErrorResponse("Report isn't available!", (int)HttpStatusCode.NotFound);
+        }
+
+        public SuccessResponse UpdateReportEditor(string reportID, string editorID)
+        {
+            var report = GetReportByID(reportID);
+            if(report != null)
+            {
+                report.EditorId = editorID;
+                Update(report);
+                return new SuccessResponse((int)HttpStatusCode.OK, "Update Success");
             }
             throw new ErrorResponse("Report isn't available!", (int)HttpStatusCode.NotFound);
         }

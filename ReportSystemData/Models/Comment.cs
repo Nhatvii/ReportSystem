@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 // Code scaffolded by EF Core assumes nullable reference types (NRTs) are not used or disabled.
@@ -11,6 +12,7 @@ namespace ReportSystemData.Models
     {
         public string CommentId { get; set; }
         public string CommentTitle { get; set; }
+        [JsonIgnore]
         public string UserId { get; set; }
         public DateTime? CreateTime { get; set; }
         public string Status { get; set; }

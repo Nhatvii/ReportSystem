@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ReportSystemData.Models;
+using ReportSystemData.Parameters;
 using ReportSystemData.Service;
 using ReportSystemData.ViewModel.Comment;
 using System;
@@ -21,9 +22,9 @@ namespace ReportSystemAPI.Controllers
         }
         [HttpGet]
         [Produces("application/json")]
-        public ActionResult<Comment> GetAllPost()
+        public ActionResult<Comment> GetAllComment([FromQuery] CommentParameters commentParameters)
         {
-            return Ok(_repository.GetAllComment());
+            return Ok(_repository.GetAllComment(commentParameters));
         }
 
         [HttpGet("{id}")]

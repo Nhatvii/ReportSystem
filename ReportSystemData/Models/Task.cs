@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 // Code scaffolded by EF Core assumes nullable reference types (NRTs) are not used or disabled.
@@ -11,15 +12,21 @@ namespace ReportSystemData.Models
     {
         public Task()
         {
-            TaskDetail = new HashSet<TaskDetail>();
+            Post = new HashSet<Post>();
+            ReportTask = new HashSet<ReportTask>();
         }
 
-        public int TaskId { get; set; }
-        public string ReportId { get; set; }
+        public string TaskId { get; set; }
         public string EditorId { get; set; }
         public string Status { get; set; }
+        public DateTime? CreateTime { get; set; }
+        public DateTime? DeadLineTime { get; set; }
+        public bool IsDelete { get; set; }
 
+        [JsonIgnore]
         public virtual Account Editor { get; set; }
-        public virtual ICollection<TaskDetail> TaskDetail { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<Post> Post { get; set; }
+        public virtual ICollection<ReportTask> ReportTask { get; set; }
     }
 }

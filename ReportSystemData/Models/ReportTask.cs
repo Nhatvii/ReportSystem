@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 // Code scaffolded by EF Core assumes nullable reference types (NRTs) are not used or disabled.
@@ -7,15 +8,16 @@ using System.Collections.Generic;
 
 namespace ReportSystemData.Models
 {
-    public partial class TaskDetail
+    public partial class ReportTask
     {
-        public int TaskId { get; set; }
-        public string PostId { get; set; }
+        public string TaskId { get; set; }
+        public string ReportId { get; set; }
         public DateTime CreateTime { get; set; }
-        public DateTime DeadLineTime { get; set; }
         public string Status { get; set; }
 
-        public virtual Post Post { get; set; }
+        [JsonIgnore]
+        public virtual Report Report { get; set; }
+        [JsonIgnore]
         public virtual Task Task { get; set; }
     }
 }

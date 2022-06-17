@@ -12,8 +12,8 @@ namespace ReportSystemData.Models
     {
         public string PostId { get; set; }
         public string UserId { get; set; }
-        public bool EmotionStatus { get; set; }
-
+        public bool? EmotionStatus { get; set; }
+        public bool? IsView { get; set; }
         [JsonIgnore]
         public virtual Post Post { get; set; }
         [JsonIgnore]

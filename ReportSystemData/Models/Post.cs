@@ -14,7 +14,6 @@ namespace ReportSystemData.Models
         {
             Comment = new HashSet<Comment>();
             Emotion = new HashSet<Emotion>();
-            TaskDetail = new HashSet<TaskDetail>();
         }
 
         public string PostId { get; set; }
@@ -29,17 +28,18 @@ namespace ReportSystemData.Models
         public string Video { get; set; }
         public string Image { get; set; }
         public int ViewCount { get; set; }
+        [JsonIgnore]
         public string EditorId { get; set; }
         public string Status { get; set; }
         public bool IsDelete { get; set; }
+        public string TaskId { get; set; }
 
         public virtual Category Category { get; set; }
         public virtual Account Editor { get; set; }
         [JsonIgnore]
+        public virtual Task Task { get; set; }
+        [JsonIgnore]
         public virtual ICollection<Comment> Comment { get; set; }
-        [JsonIgnore]
         public virtual ICollection<Emotion> Emotion { get; set; }
-        [JsonIgnore]
-        public virtual ICollection<TaskDetail> TaskDetail { get; set; }
     }
 }
