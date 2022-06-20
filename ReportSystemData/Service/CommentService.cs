@@ -21,7 +21,7 @@ namespace ReportSystemData.Service
     {
         List<Comment> GetAllComment(CommentParameters commentParameters);
         Comment GetCommentByID(string id);
-        Task<Comment> CreateCommentAsync(CreateCommentViewModel comment);
+        Task<SuccessResponse> CreateCommentAsync(CreateCommentViewModel comment);
         SuccessResponse UpdateComment(UpdateCommentViewModel comment);
         SuccessResponse DeleteComment(string id);
     }
@@ -55,7 +55,7 @@ namespace ReportSystemData.Service
             }
             throw new ErrorResponse("Invalid ID !!!", (int)HttpStatusCode.NotFound);
         }
-        public async Task<Comment> CreateCommentAsync(CreateCommentViewModel comment)
+        public async Task<SuccessResponse> CreateCommentAsync(CreateCommentViewModel comment)
         {
             var account = _accountService.GetAccountByID(comment.UserId);
             if (account == null)
@@ -78,7 +78,9 @@ namespace ReportSystemData.Service
             cmt.Status = CommentConstants.STATUS_COMMENT_NEW;
             cmt.CommentTitle = cmtstring;
             await CreateAsyn(cmt);
-            return cmt;
+            //return cmt;
+            return new SuccessResponse((int)HttpStatusCode.OK, cmt.CommentId);
+
         }
 
         public SuccessResponse UpdateComment(UpdateCommentViewModel comment)
@@ -86,7 +88,8 @@ namespace ReportSystemData.Service
             var cmt = Get().Where(c => c.CommentId.Equals(comment.CommentId)).FirstOrDefault();
             if (cmt != null)
             {
-                cmt.CommentTitle = comment.CommentTitle;
+                var cmtTmp = CheckBadWord(comment.CommentTitle);
+                cmt.CommentTitle = cmtTmp;
                 if (comment.Status == 1) { cmt.Status = CommentConstants.STATUS_COMMENT_NEW; }
                 if (comment.Status == 2) { cmt.Status = CommentConstants.STATUS_COMMENT_PENDING; }
                 if (comment.Status == 3) { cmt.Status = CommentConstants.STATUS_COMMENT_APPROVE; }
@@ -130,7 +133,7 @@ namespace ReportSystemData.Service
                     {
                         foreach (var item in startendIndex)
                         {
-                            if ((item.Key <= start) && (offset > item.Value))
+                            if ((item.Key == start) && (offset+start > item.Value))
                             {
                                 startendIndex.Remove(item.Key);
                             }
